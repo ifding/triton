@@ -204,6 +204,7 @@ def TT_LoadOp
     : TT_Op<"load",
             [SameLoadStoreOperandsAndResultShape,
              SameLoadStoreOperandsAndResultEncoding, AttrSizedOperandSegments,
+             ProductLayoutOpInterface,
              DeclareOpInterfaceMethods<PredicatedOpInterface>,
              DeclareOpInterfaceMethods<MemoryEffectsOpInterface>,
              DeclareOpInterfaceMethods<InferTypeOpInterface>,
@@ -251,6 +252,7 @@ def TT_LoadOp
 def TT_StoreOp
     : TT_Op<
           "store", [SameLoadStoreOperandsShape, SameLoadStoreOperandsEncoding,
+                    ProductLayoutOpInterface,
                     DeclareOpInterfaceMethods<PredicatedOpInterface>,
                     TypesMatchWith<"value type matches ptr type", "ptr",
                                    "value", "getPointeeType($_self)">,
@@ -476,7 +478,8 @@ def TT_AtomicCASOp
 // Shape Manipulation Ops
 //
 def TT_SplatOp : TT_Op<"splat", [Pure, SameOperandsAndResultElementType,
-                                 SameOperandsAndResultEncoding]> {
+                                 SameOperandsAndResultEncoding,
+                                 ProductLayoutOpInterface]> {
   let summary = "splat";
 
   let arguments = (ins TT_Type:$src);
@@ -610,7 +613,8 @@ def TT_SplitOp : TT_Op<"split", [
 
 def TT_TransOp : TT_Op<"trans", [Pure, TransposeOpInterface,
                                  InferTensorTypeOpWithLayoutEquivalence,
-                                 SameOperandsAndResultElementType]> {
+                                 SameOperandsAndResultElementType,
+                                 ProductLayoutOpInterface]> {
 
   let summary = "rearrange the dimensions of a tensor";
   let description = [{
@@ -903,7 +907,7 @@ def TT_ExternElementwiseOp
 //
 // Make Range Op
 //
-def TT_MakeRangeOp : TT_Op<"make_range", [Pure]> {
+def TT_MakeRangeOp : TT_Op<"make_range", [Pure, ProductLayoutOpInterface]> {
   let summary = "make range";
 
   let description = [{
@@ -984,7 +988,8 @@ def TT_HistogramOp
 // Gather Op
 //
 def TT_GatherOp
-    : TT_Op<"gather", [Pure, DeclareOpInterfaceMethods<InferTypeOpInterface>]> {
+    : TT_Op<"gather", [Pure, DeclareOpInterfaceMethods<InferTypeOpInterface>,
+                       ProductLayoutOpInterface]> {
   let summary = "local gather operation";
   let description = [{
     Gather elements from the input tensor using the indices tensor along a
@@ -1015,7 +1020,8 @@ def TT_GatherOp
 // Print Op
 //
 def TT_PrintOp : TT_Op<"print", [SameVariadicOperandSize,
-                                 MemoryEffects<[MemWrite<GlobalMemory>]>]> {
+                                 MemoryEffects<[MemWrite<GlobalMemory>]>,
+                                 ProductLayoutOpInterface]> {
   let arguments = (ins StrAttr:$prefix, BoolAttr:$hex,
       Variadic<AnyTypeOf<[TT_Type]>>:$args, DenseI32ArrayAttr:$isSigned);
   let summary = "Device-side print, as in CUDA for debugging";
@@ -1031,7 +1037,8 @@ def TT_PrintOp : TT_Op<"print", [SameVariadicOperandSize,
 //
 // Assert Op
 //
-def TT_AssertOp : TT_Op<"assert", [MemoryEffects<[MemWrite<GlobalMemory>]>]> {
+def TT_AssertOp : TT_Op<"assert", [MemoryEffects<[MemWrite<GlobalMemory>]>,
+                                   ProductLayoutOpInterface]> {
   let summary = "Device-side assert, as in CUDA for correctness checking";
   let description = [{
     `tt.assert` takes a condition tensor and a message string.
